@@ -1,0 +1,16 @@
+#mem-usage-bg {
+    background-color:blue;
+}
+#mem-usage-cell {
+    background-color:red;
+}
+#mem-usage-cell-selected {
+    background-color: #00ff00;
+}
+
+#sample {
+    background-color:grey;
+}
+#sample-selected {
+    background-color:red;
+}
