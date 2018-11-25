@@ -20,14 +20,21 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Gtk.Box;    use Gtk.Box;
-with Glib;       use Glib;
-
+with Gtk.Box;            use Gtk.Box;
+with Glib;               use Glib;
 with Gtk.Enums;
-
 with GUI.Vertical_Gauge;
+with GUI.Empty_Param;
+
+with Engine_Manager;     use Engine_Manager;
 
 package body GUI.Params_Page is
+
+   function Create_Param_Widget (Track : Track_Id;
+                                 Step  : Step_Id;
+                                 Param : Param_Id;
+                                 Kind  : Parameter_Kind)
+                                 return Gtk.Widget.Gtk_Widget;
 
    -------------
    -- Gtk_New --
@@ -63,14 +70,12 @@ package body GUI.Params_Page is
       Self.Set_Vexpand (True);
 
       for Step in Step_Id loop
-
-         declare
-            P : GUI.Vertical_Gauge.Widget;
-         begin
-            GUI.Vertical_Gauge.Gtk_New (P, Track, Step, Param);
-            Self.Steps (Step) := Updatable (P);
-            Self.Add (P);
-         end;
+         Self.Steps (Step)  := Create_Param_Widget (Self.Track,
+                                                    Step,
+                                                    Self.Param,
+                                                    None);
+         Self.Updatable (Step) := Updatable (Self.Steps (Step));
+         Self.Add (Self.Steps (Step));
       end loop;
 
    end Initialize;
@@ -82,9 +87,63 @@ package body GUI.Params_Page is
    overriding
    procedure Update (Self : in out Widget_Record) is
    begin
-      for Step of Self.Steps loop
+      for Step of Self.Updatable loop
          Step.Update;
       end loop;
    end Update;
+
+   -------------------------
+   -- Create_Param_Widget --
+   -------------------------
+
+   function Create_Param_Widget (Track : Track_Id;
+                                 Step  : Step_Id;
+                                 Param : Param_Id;
+                                 Kind  : Parameter_Kind)
+                                 return Gtk.Widget.Gtk_Widget
+   is
+   begin
+      case Kind is
+         when Volume | Pan =>
+            declare
+               P : GUI.Vertical_Gauge.Widget;
+            begin
+               GUI.Vertical_Gauge.Gtk_New (P, Track, Step, Param,
+                                           Fill => Kind in Volume);
+               return Gtk.Widget.Gtk_Widget (P);
+            end;
+
+         when others =>
+            declare
+               P : GUI.Empty_Param.Widget;
+            begin
+               GUI.Empty_Param.Gtk_New (P);
+               return Gtk.Widget.Gtk_Widget (P);
+            end;
+      end case;
+   end Create_Param_Widget;
+
+   -----------------
+   -- Reconfigure --
+   -----------------
+
+   overriding
+   procedure Reconfigure (Self : in out Widget_Record) is
+      Engine : constant Track_Engine_Kind   := Current_Engine (Self.Track);
+      Sub    : constant Track_Sub_Engine_Id := Current_Sub (Self.Track);
+      Kind   : constant Parameter_Kind := Param_Kind (Engine, Sub, Self.Param);
+   begin
+      for Step in Step_Id loop
+         Self.Steps (Step).Destroy; --  Also removes it from the container
+         Self.Steps (Step) := Create_Param_Widget (Self.Track,
+                                                   Step,
+                                                   Self.Param,
+                                                   Kind);
+         Self.Updatable (Step) := Updatable (Self.Steps (Step));
+         Self.Add (Self.Steps (Step));
+      end loop;
+
+      Self.Show_All;
+   end Reconfigure;
 
 end GUI.Params_Page;

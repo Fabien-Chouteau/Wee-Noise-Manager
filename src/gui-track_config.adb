@@ -80,4 +80,15 @@ package body GUI.Track_Config is
       null;
    end Update;
 
+   -----------------
+   -- Reconfigure --
+   -----------------
+
+   overriding
+   procedure Reconfigure (Self : in out Widget_Record) is
+   begin
+      Self.Sub.Reconfigure;
+      Self.Engine.Reconfigure;
+   end Reconfigure;
+
 end GUI.Track_Config;

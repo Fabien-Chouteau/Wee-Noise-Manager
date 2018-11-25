@@ -76,4 +76,15 @@ package body GUI.Track is
       Self.Sequence.Update;
    end Update;
 
+   -----------------
+   -- Reconfigure --
+   -----------------
+
+   overriding
+   procedure Reconfigure (Self : in out Widget_Record) is
+   begin
+      Self.Config.Reconfigure;
+      Self.Sequence.Reconfigure;
+   end Reconfigure;
+
 end GUI.Track;

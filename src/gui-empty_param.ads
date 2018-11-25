@@ -20,20 +20,33 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-package GUI is
+with Gtk.Event_Box;
 
-   type Updatable_Record is interface;
-   type Updatable is access all Updatable_Record'Class;
+with Project_Manager; use Project_Manager;
 
-   procedure Update (Self : in out Updatable_Record) is abstract;
-   --  This primitive is called when the project/track/step has potentially
-   --  changed and the widget may have to update its corresponding status.
+package GUI.Empty_Param is
 
-   type Reconfigurable_Record is interface;
-   type Reconfigurable is access all Reconfigurable_Record'Class;
+   subtype Parent_Record is Gtk.Event_Box.Gtk_Event_Box_Record;
+   subtype Parent is Gtk.Event_Box.Gtk_Event_Box;
 
-   procedure Reconfigure (Self : in out Reconfigurable_Record) is abstract;
-   --  This primitive is called when the track is reconfigured, for instance
-   --  when the sound engine is changed.
+   type Widget_Record is new Parent_Record and Updatable_Record with private;
+   type Widget is access all Widget_Record'Class;
 
-end GUI;
+   procedure Gtk_New (Self : out Widget);
+
+   procedure Initialize (Self  : not null access Widget_Record'Class);
+
+   function Value (Self : Widget_Record) return Param_Value
+   is (0);
+
+   overriding
+   procedure Update (Self : in out Widget_Record)
+   is null;
+
+private
+
+   type Widget_Record is new Parent_Record
+     and Updatable_Record
+   with null record;
+
+end GUI.Empty_Param;

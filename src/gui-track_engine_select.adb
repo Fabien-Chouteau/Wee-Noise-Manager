@@ -21,10 +21,32 @@
 -------------------------------------------------------------------------------
 
 with Gtk.Combo_Box_Text; use Gtk.Combo_Box_Text;
-with Glib;          use Glib;
-with Gtk.Widget;    use Gtk.Widget;
+with Gtk.Combo_Box;      use Gtk.Combo_Box;
+with Glib;               use Glib;
+with Gtk.Widget;         use Gtk.Widget;
+with Engine_Manager;     use Engine_Manager;
 
 package body GUI.Track_Engine_Select is
+
+   procedure On_Change (W : access Gtk_Combo_Box_Record'Class);
+
+   ---------------
+   -- On_Change --
+   ---------------
+
+   procedure On_Change (W : access Gtk_Combo_Box_Record'Class) is
+      Self   : constant Widget := Widget (W);
+      Config : constant Gtk.Widget.Gtk_Widget := Self.Get_Parent;
+      Track  : constant Reconfigurable := Reconfigurable (Config.Get_Parent);
+   begin
+      if not Self.In_Reconfig and then Self.Get_Active /= -1 then
+         Change_Engine (Self.Track,
+                        Track_Engine_Kind'Val (Self.Get_Active));
+         if Track /= null then
+            Track.Reconfigure;
+         end if;
+      end if;
+   end On_Change;
 
    -------------
    -- Gtk_New --
@@ -46,7 +68,9 @@ package body GUI.Track_Engine_Select is
                          Track : Track_Id)
    is
    begin
-      Initialize (Parent (Self));
+      Gtk.Combo_Box_Text.Initialize (Parent (Self));
+
+      Self.On_Changed (On_Change'Access);
 
       Self.Track := Track;
 
@@ -54,8 +78,6 @@ package body GUI.Track_Engine_Select is
          Self.Insert_Text (Gint (Track_Engine_Kind'Pos (Engine)),
                            Img (Engine));
       end loop;
-
-      Self.Set_Active (Gint (Track_Engine_Kind'Pos (Track_Engine_Kind'First)));
    end Initialize;
 
    ------------
@@ -67,5 +89,18 @@ package body GUI.Track_Engine_Select is
    begin
       null;
    end Update;
+
+   -----------------
+   -- Reconfigure --
+   -----------------
+
+   overriding
+   procedure Reconfigure (Self : in out Widget_Record) is
+      Engine : constant Track_Engine_Kind := Current_Engine (Self.Track);
+   begin
+      Self.In_Reconfig := True;
+      Self.Set_Active (Gint (Track_Engine_Kind'Pos (Engine)));
+      Self.In_Reconfig := False;
+   end Reconfigure;
 
 end GUI.Track_Engine_Select;

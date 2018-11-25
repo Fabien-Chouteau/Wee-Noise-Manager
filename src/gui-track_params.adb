@@ -20,9 +20,10 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Gtk.Notebook; use Gtk.Notebook;
-with Gtk.Widget;    use Gtk.Widget;
+with Gtk.Notebook;   use Gtk.Notebook;
+with Gtk.Widget;     use Gtk.Widget;
 with Gtk.Enums;
+with Engine_Manager; use Engine_Manager;
 
 package body GUI.Track_Params is
 
@@ -53,10 +54,8 @@ package body GUI.Track_Params is
       Self.Set_Tab_Pos (Gtk.Enums.Pos_Bottom);
 
       for Param in Param_Id loop
-         Gtk.Label.Gtk_New (Self.Labels (Param), Param'Img);
-
+         Gtk.Label.Gtk_New (Self.Labels (Param), "");
          GUI.Params_Page.Gtk_New (Self.Pages (Param), Track, Param);
-
          Self.Append_Page (Self.Pages (Param),
                            Self.Labels (Param));
       end loop;
@@ -71,5 +70,22 @@ package body GUI.Track_Params is
    begin
       raise Program_Error;
    end Update;
+
+   -----------------
+   -- Reconfigure --
+   -----------------
+
+   overriding
+   procedure Reconfigure (Self : in out Widget_Record) is
+      Engine : constant Track_Engine_Kind   := Current_Engine (Self.Track);
+      Sub    : constant Track_Sub_Engine_Id := Current_Sub (Self.Track);
+   begin
+      for Param in Param_Id loop
+         if Valid (Engine, Sub, Param) then
+            Self.Labels (Param).Set_Text (Param_Name (Engine, Sub, Param));
+         end if;
+         Self.Pages (Param).Reconfigure;
+      end loop;
+   end Reconfigure;
 
 end GUI.Track_Params;

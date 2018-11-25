@@ -21,10 +21,33 @@
 -------------------------------------------------------------------------------
 
 with Gtk.Combo_Box_Text; use Gtk.Combo_Box_Text;
-with Glib;          use Glib;
-with Gtk.Widget;    use Gtk.Widget;
+with Gtk.Combo_Box;      use Gtk.Combo_Box;
+with Glib;               use Glib;
+with Gtk.Widget;         use Gtk.Widget;
+with Engine_Manager;     use Engine_Manager;
 
 package body GUI.Track_Sub_Select is
+
+   procedure On_Change (W : access Gtk_Combo_Box_Record'Class);
+
+   ---------------
+   -- On_Change --
+   ---------------
+
+   procedure On_Change (W : access Gtk_Combo_Box_Record'Class) is
+      Self   : constant Widget := Widget (W);
+      Config : constant Gtk.Widget.Gtk_Widget := Self.Get_Parent;
+      Track  : constant Reconfigurable := Reconfigurable (Config.Get_Parent);
+   begin
+      if not Self.In_Reconfig and then Self.Get_Active /= -1 then
+         Change_Sub (Self.Track,
+                     Track_Sub_Engine_Id'Val (Self.Get_Active));
+
+         if Track /= null then
+            Track.Reconfigure;
+         end if;
+      end if;
+   end On_Change;
 
    -------------
    -- Gtk_New --
@@ -46,17 +69,11 @@ package body GUI.Track_Sub_Select is
                          Track : Track_Id)
    is
    begin
-      Initialize (Parent (Self));
+      Parent_Package.Initialize (Parent (Self));
+
+      Self.On_Changed (On_Change'Access);
 
       Self.Track := Track;
-
-      for Sub in Track_Sub_Engine_Id loop
-         Self.Insert_Text (Gint (Track_Sub_Engine_Id'Pos (Sub)),
-                           Sub'Img);
-      end loop;
-
-      Self.Set_Active
-        (Gint (Track_Sub_Engine_Id'Pos (Track_Sub_Engine_Id'First)));
    end Initialize;
 
    ------------
@@ -68,5 +85,33 @@ package body GUI.Track_Sub_Select is
    begin
       null;
    end Update;
+
+   -----------------
+   -- Reconfigure --
+   -----------------
+
+   overriding
+   procedure Reconfigure (Self : in out Widget_Record) is
+      Engine : constant Track_Engine_Kind := Current_Engine (Self.Track);
+      Cur_Sub : constant Track_Sub_Engine_Id := Current_Sub (Self.Track);
+   begin
+      Self.In_Reconfig := True;
+      Self.Remove_All;
+
+      for Sub in Track_Sub_Engine_Id loop
+         if Valid (Engine, Sub) then
+            Self.Insert_Text (Gint (Track_Sub_Engine_Id'Pos (Sub)),
+                              Sub_Name (Engine, Sub));
+
+            if Cur_Sub = Sub then
+               Self.Set_Active (Gint (Track_Sub_Engine_Id'Pos (Sub)));
+            end if;
+         else
+            exit;
+         end if;
+      end loop;
+
+      Self.In_Reconfig := False;
+   end Reconfigure;
 
 end GUI.Track_Sub_Select;

@@ -32,7 +32,11 @@ package GUI.Track_Params is
    subtype Parent_Record is Gtk.Notebook.Gtk_Notebook_Record;
    subtype Parent is Gtk.Notebook.Gtk_Notebook;
 
-   type Widget_Record is new Parent_Record and Updatable_Record with private;
+   type Widget_Record is new Parent_Record
+     and Updatable_Record
+     and Reconfigurable_Record
+   with private;
+
    type Widget is access all Widget_Record'Class;
 
    procedure Gtk_New (Self : out Widget;
@@ -44,12 +48,18 @@ package GUI.Track_Params is
    overriding
    procedure Update (Self : in out Widget_Record);
 
+   overriding
+   procedure Reconfigure (Self : in out Widget_Record);
+
 private
 
    type Label_Array is array (Param_Id) of Gtk.Label.Gtk_Label;
    type Page_Array is array (Param_Id) of GUI.Params_Page.Widget;
 
-   type Widget_Record is new Parent_Record and Updatable_Record with record
+   type Widget_Record is new Parent_Record
+     and Updatable_Record
+     and Reconfigurable_Record
+   with record
       Track : Track_Id;
 
       Labels : Label_Array;

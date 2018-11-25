@@ -29,7 +29,10 @@ package GUI.Track_Engine_Select is
    subtype Parent_Record is Gtk.Combo_Box_Text.Gtk_Combo_Box_Text_Record;
    subtype Parent is Gtk.Combo_Box_Text.Gtk_Combo_Box_Text;
 
-   type Widget_Record is new Parent_Record and Updatable_Record with private;
+   type Widget_Record is new Parent_Record
+     and Updatable_Record
+     and Reconfigurable_Record
+   with private;
    type Widget is access all Widget_Record'Class;
 
    procedure Gtk_New (Self  : out Widget;
@@ -41,10 +44,19 @@ package GUI.Track_Engine_Select is
    overriding
    procedure Update (Self : in out Widget_Record);
 
+   overriding
+   procedure Reconfigure (Self : in out Widget_Record);
+
 private
 
-   type Widget_Record is new Parent_Record and Updatable_Record with record
+   type Widget_Record is new Parent_Record
+     and Updatable_Record
+     and Reconfigurable_Record
+    with record
       Track : Track_Id;
+
+      In_Reconfig : Boolean := False;
+      --  Used to avoid recursive reconfiguration
    end record;
 
 end GUI.Track_Engine_Select;

@@ -33,7 +33,11 @@ package GUI.Track_Config is
    subtype Parent_Record is Gtk.Grid.Gtk_Grid_Record;
    subtype Parent is Gtk.Grid.Gtk_Grid;
 
-   type Widget_Record is new Parent_Record and Updatable_Record with private;
+   type Widget_Record is new Parent_Record
+     and Updatable_Record
+     and Reconfigurable_Record
+   with private;
+
    type Widget is access all Widget_Record'Class;
 
    procedure Gtk_New (Self  : out Widget;
@@ -45,9 +49,15 @@ package GUI.Track_Config is
    overriding
    procedure Update (Self : in out Widget_Record);
 
+   overriding
+   procedure Reconfigure (Self : in out Widget_Record);
+
 private
 
-   type Widget_Record is new Parent_Record and Updatable_Record with record
+   type Widget_Record is new Parent_Record
+     and Updatable_Record
+     and Reconfigurable_Record
+   with record
       Track : Track_Id;
 
       Engine : GUI.Track_Engine_Select.Widget;
