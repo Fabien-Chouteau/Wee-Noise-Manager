@@ -53,20 +53,7 @@ package body GUI.Samples is
       Self.Set_Hexpand (True);
       Self.Set_Vexpand (True);
 
-      Memory_Usage.Gtk_New (Self.Usage);
-
---        Mem_Usage.Set_Selected_Callback (Set_Selected_Sample'Access);
-
-      Self.Usage.Set_Usage (1, 0.1);
-      Self.Usage.Set_Usage (2, 0.15);
-      Self.Usage.Set_Usage (3, 0.234);
-      Self.Usage.Set_Usage (40, 0.1);
-      Self.Usage.Set_Usage (50, 0.2);
-
-      Self.Add (Self.Usage);
-
       GUI.Sample_Grid.Gtk_New (Self.Grid);
---        Manager.Set_Selected_Callback (Set_Selected_Sample'Access);
 
       Self.Add (Self.Grid);
 

@@ -28,8 +28,18 @@ package Project_Manager is
    type Param_Id is range 0 .. 9;
 
    type Param_Value is range 0 .. 127;
+   type Param_Array is array (Param_Id) of Param_Value;
 
    type Step_Condition_Kind is (P100, P25, P50, P75);
+
+   type Step_Data is record
+      Enabled   : Boolean;
+      Condition : Step_Condition_Kind;
+      Params    : Param_Array;
+   end record;
+
+   type All_Steps is array (Sequence_Id, Track_Id, Step_Id) of Step_Data;
+   Steps : All_Steps;
 
    function Img (Kind : Step_Condition_Kind) return String
    is (case Kind is

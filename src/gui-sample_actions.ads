@@ -20,56 +20,13 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Interfaces; use Interfaces;
+with Gtk.Widget;
 
-package Sample_Manager is
+with Sample_Manager;
 
-   type Sample_Id is range 0 .. 99;
+package GUI.Sample_Actions is
 
-   subtype Sample_Name_Size is Integer range 0 .. 15;
-   subtype Sample_Name is String (1 .. Sample_Name_Size'Last);
+   procedure Load_Sample (Id     : Sample_Manager.Sample_Id;
+                          Widget : Gtk.Widget.Gtk_Widget);
 
-   type Sample_Block_Size is range 1 .. 512;
-   type Sample_Block is array (Sample_Block_Size) of Unsigned_8;
-   type Sample_Block_Id is range 1 .. 127;
-   type Sample_Size is range 0 .. Sample_Block_Id'Last;
-
-   function Name (Id : Sample_Id) return Sample_Name;
-
-   procedure Set_Name (Id   : Sample_Id;
-                       Name : Sample_Name);
-
-   function Size (Id : Sample_Id) return Sample_Size;
-
-   function Read_Block (Id    : Sample_Id;
-                        Block : Sample_Block_Id;
-                        Data  : out Sample_Block)
-                        return Boolean;
-   --  Return False if the block doesn't exist
-
-   function Empty (Id : Sample_Id) return Boolean;
-
-   function Available return Sample_Size;
-
-   procedure Erase (Id : Sample_Id)
-     with Post => Empty (Id)
-                    and then
-                  Available = Available'Old - Size (Id)'Old;
-
-   -- Recording --
-
-   procedure Start_Recording (Id : Sample_Id)
-     with Pre => not Recording and then Empty (Id) and then Available > 0;
-
-   procedure End_Recording
-     with Pre  => Recording,
-          Post => not Recording;
-
-   function Recording return Boolean;
-   --  Red Means Recording...
-
-   procedure Push (Data : Sample_Block)
-     with Pre  => Recording,
-          Post => Available = Available'Old - 1;
-
-end Sample_Manager;
+end GUI.Sample_Actions;

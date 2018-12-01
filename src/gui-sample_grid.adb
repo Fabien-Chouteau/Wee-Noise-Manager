@@ -31,15 +31,14 @@ with Gtk.Button;   use Gtk.Button;
 with Gtk.Label;    use Gtk.Label;
 with Gtk.Handlers;
 with Gtk.Editable;
-with Gtk.File_Chooser; use Gtk.File_Chooser;
-with Gtk.File_Chooser_Dialog; use Gtk.File_Chooser_Dialog;
 
 with Gdk.Event;
 with Glib; use Glib;
 with Gtk.Widget; use Gtk.Widget;
 
 with Sample_Manager; use Sample_Manager;
-with Gtk.Dialog; use Gtk.Dialog;
+
+with GUI.Sample_Actions;
 
 package body GUI.Sample_Grid is
 
@@ -148,24 +147,8 @@ package body GUI.Sample_Grid is
    procedure Load_Sample_Callback (W  : access Gtk_Button_Record'Class;
                                    Id : Sample_Id)
    is
-      pragma Unreferenced (W);
-      Diag : Gtk_File_Chooser_Dialog;
-
-      Unused : Gtk_Widget;
    begin
-      Ada.Text_IO.Put_Line ("Load sample" & Id'Img);
-
-      Gtk_New (Diag, "Load sample", null, Action_Open);
-
-      Unused := Diag.Add_Button ("Load", Gtk_Response_OK);
-      Unused := Diag.Add_Button ("Cancel", Gtk_Response_Cancel);
-
-      if Diag.Run = Gtk.Dialog.Gtk_Response_OK then
-         Ada.Text_IO.Put_Line ("File open -> " & Diag.Get_Filename);
-      else
-         Ada.Text_IO.Put_Line ("File open -> Other");
-      end if;
-      Diag.Destroy;
+      GUI.Sample_Actions.Load_Sample (Id, Gtk.Widget.Gtk_Widget (W));
    end Load_Sample_Callback;
 
    --------------------

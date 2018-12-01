@@ -22,10 +22,7 @@
 
 with Gtk.Box;
 
-with Sample_Manager; use Sample_Manager;
-
 private with GUI.Sample_Grid;
-private with GUI.Resource_Usage;
 
 package GUI.Samples is
 
@@ -44,11 +41,8 @@ package GUI.Samples is
 
 private
 
-   package Memory_Usage is new GUI.Resource_Usage (Sample_Id);
-
    type Widget_Record is new Parent_Record and Updatable_Record with record
       Grid  : GUI.Sample_Grid.Widget;
-      Usage : Memory_Usage.Widget;
    end record;
 
 end GUI.Samples;

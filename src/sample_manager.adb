@@ -22,6 +22,23 @@
 
 package body Sample_Manager is
 
+   type Sample_Memory_Size is
+     range 1 .. Integer (Sample_Size'Last) * Integer (Sample_Block_Size'Last);
+
+   type Sample_Data is record
+      Name : Sample_Name := (others => ASCII.NUL);
+      Size : Sample_Size := 42;
+      First_Block : Sample_Size := 0;
+   end record;
+
+   Sample_Memory : array (Sample_Memory_Size) of Unsigned_8;
+   Samples : array (Sample_Id) of Sample_Data;
+
+   Last_Used : Sample_Size := 0;
+
+   Now_Recording : Boolean := False;
+   Recording_In  : Sample_Id;
+
    ----------
    -- Name --
    ----------
@@ -75,5 +92,78 @@ package body Sample_Manager is
          return False;
       end if;
    end Read_Block;
+
+   -----------
+   -- Empty --
+   -----------
+
+   function Empty (Id : Sample_Id) return Boolean
+   is (Size (Id) = 0);
+
+   ---------------
+   -- Available --
+   ---------------
+
+   function Available return Sample_Size
+   is (Sample_Size'Last - Last_Used);
+
+   -----------
+   -- Erase --
+   -----------
+
+   procedure Erase (Id : Sample_Id) is
+   begin
+      raise Program_Error;
+   end Erase;
+
+   ---------------------
+   -- Start_Recording --
+   ---------------------
+
+   procedure Start_Recording (Id : Sample_Id) is
+   begin
+      Now_Recording := True;
+      Recording_In := Id;
+
+      Samples (Id).First_Block := Last_Used + 1;
+   end Start_Recording;
+
+   -------------------
+   -- End_Recording --
+   -------------------
+
+   procedure End_Recording is
+   begin
+      Now_Recording := False;
+   end End_Recording;
+
+   ---------------
+   -- Recording --
+   ---------------
+
+   function Recording return Boolean
+   is (Now_Recording);
+
+   ----------
+   -- Push --
+   ----------
+
+   procedure Push (Data : Sample_Block) is
+      Index  : Sample_Memory_Size;
+      Offset : Integer;
+   begin
+      Last_Used := Last_Used + 1;
+
+      --  Copy data at Last_Used
+      Offset := (Integer (Last_Used) - 1) * Integer (Sample_Block_Size'Last);
+      Index := Sample_Memory_Size (1 + Offset);
+
+      for Elt of Data loop
+         Sample_Memory (Index) := Elt;
+         Index := Index + 1;
+      end loop;
+
+      Samples (Recording_In).Size := Samples (Recording_In).Size + 1;
+   end Push;
 
 end Sample_Manager;
