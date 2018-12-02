@@ -20,30 +20,29 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Gtk.Widget;
+with Gtk.Widget; use Gtk.Widget;
 
-package GUI is
+package body GUI is
 
-   type Updatable_Record is interface;
-   type Updatable is access all Updatable_Record'Class;
+   -----------------------
+   -- Widget_From_Child --
+   -----------------------
 
-   procedure Update (Self : in out Updatable_Record) is abstract;
-   --  This primitive is called when the project/track/step has potentially
-   --  changed and the widget may have to update its corresponding status.
-
-   type Reconfigurable_Record is interface;
-   type Reconfigurable is access all Reconfigurable_Record'Class;
-
-   procedure Reconfigure (Self : in out Reconfigurable_Record) is abstract;
-   --  This primitive is called when the track is reconfigured, for instance
-   --  when the sound engine is changed.
-
-   generic
-      type Widget_Record (<>) is new Gtk.Widget.Gtk_Widget_Record with private;
-      type Widget is access all Widget_Record'Class;
    function Widget_From_Child
-     (W  : access Gtk.Widget.Gtk_Widget_Record'Class)
-      return not null access Widget_Record'Class;
-   --  Utility function to find a wigdet from one of its child
+     (W  : access Gtk_Widget_Record'Class)
+      return not null access Widget_Record'Class
+   is
+      Parent : Gtk_Widget := W.Get_Parent;
+   begin
+      while Parent.all not in Widget_Record'Class loop
+         Parent := Parent.Get_Parent;
+
+         if Parent = null then
+            raise Program_Error with "Cannot find parent";
+         end if;
+      end loop;
+
+      return Widget (Parent);
+   end Widget_From_Child;
 
 end GUI;

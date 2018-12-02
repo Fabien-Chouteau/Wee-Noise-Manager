@@ -57,10 +57,7 @@ package body GUI.Sample_Grid is
       Boolean,
       Sample_Id);
 
-   function To_Widget
-     (W  : access Gtk_Grid_Record'Class)
-      return Widget;
-   --  Return the widget containings this Event_Box cell
+   function To_Widget is new Widget_From_Child (Widget_Record, Widget);
 
    procedure Edit_Sample_Callback (W  : access Gtk_Button_Record'Class;
                                    Id : Sample_Id);
@@ -79,23 +76,6 @@ package body GUI.Sample_Grid is
 
    procedure Update_Name (W : access Gtk_Entry_Record'Class;
                           Id : Sample_Id);
-
-   ---------------
-   -- To_Widget --
-   ---------------
-
-   function To_Widget
-     (W  : access Gtk_Grid_Record'Class)
-      return Widget
-   is
-      Parent : Gtk_Widget := W.Get_Parent;
-   begin
-      while Parent.all not in Widget_Record'Class loop
-         Parent := Parent.Get_Parent;
-      end loop;
-
-      return Widget (Parent);
-   end To_Widget;
 
    -------------
    -- Gtk_New --

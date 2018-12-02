@@ -29,10 +29,7 @@ with Glib;          use Glib;
 
 package body GUI.Resource_Usage is
 
-   function To_Widget
-     (W  : access Gtk_Event_Box_Record'Class)
-      return Widget;
-   --  Return the widget containings this Event_Box cell
+   function To_Widget is new Widget_From_Child (Widget_Record, Widget);
 
    package Event_Box_Callbacks is new Gtk.Handlers.User_Return_Callback
      (Gtk_Event_Box_Record,
@@ -53,22 +50,6 @@ package body GUI.Resource_Usage is
    function On_Draw (W    : access Gtk_Box_Record'Class;
                      Self : Widget)
                      return Boolean;
-   ---------------
-   -- To_Widget --
-   ---------------
-
-   function To_Widget
-     (W  : access Gtk_Event_Box_Record'Class)
-      return Widget
-   is
-      Parent : Gtk_Widget := W.Get_Parent;
-   begin
-      while Parent.all not in Widget_Record'Class loop
-         Parent := Parent.Get_Parent;
-      end loop;
-
-      return Widget (Parent);
-   end To_Widget;
 
    ------------------------
    -- Mem_Cell_On_Motion --
