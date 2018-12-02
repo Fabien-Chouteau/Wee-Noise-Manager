@@ -26,6 +26,7 @@ with Gtk.Message_Dialog;      use Gtk.Message_Dialog;
 with Gtk.File_Chooser;        use Gtk.File_Chooser;
 with Gtk.File_Chooser_Dialog; use Gtk.File_Chooser_Dialog;
 
+with GUI.Sample_Edit_Dialog;
 with Sample_Manager;          use Sample_Manager;
 with Audio_Interface;         use Audio_Interface;
 
@@ -149,4 +150,22 @@ package body GUI.Sample_Actions is
 
       Ada.Text_IO.Put_Line ("End sample preview");
    end Play_Preview;
+
+   ----------
+   -- Edit --
+   ----------
+
+   procedure Edit (Id : Sample_Manager.Sample_Id) is
+      Diag : GUI.Sample_Edit_Dialog.Widget;
+   begin
+      GUI.Sample_Edit_Dialog.Gtk_New (Diag, Id);
+
+      if Diag.Run = Gtk.Dialog.Gtk_Response_Apply then
+         raise Program_Error with "Not implemented";
+      end if;
+
+      Diag.Destroy;
+
+   end Edit;
+
 end GUI.Sample_Actions;

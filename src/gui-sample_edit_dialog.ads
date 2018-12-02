@@ -20,14 +20,47 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Sample_Manager;
+with Gtk.Dialog;
 
-package GUI.Sample_Actions is
+with Sample_Manager; use Sample_Manager;
 
-   procedure Load_Sample (Id : Sample_Manager.Sample_Id);
+private with Gtk.Event_Box;
+private with Gtk.Scale;
 
-   procedure Play_Preview (Id : Sample_Manager.Sample_Id);
+package GUI.Sample_Edit_Dialog is
 
-   procedure Edit (Id : Sample_Manager.Sample_Id);
+   package Parent_Package renames Gtk.Dialog;
+   subtype Parent_Record is Parent_Package.Gtk_Dialog_Record;
+   subtype Parent is Parent_Package.Gtk_Dialog;
 
-end GUI.Sample_Actions;
+   type Widget_Record is new Parent_Record
+   with private;
+
+   type Widget is access all Widget_Record'Class;
+
+   procedure Gtk_New (Self  : out Widget;
+                      Id    : Sample_Id);
+
+   procedure Initialize (Self : not null access Widget_Record'Class;
+                         Id   : Sample_Id);
+
+   overriding
+   procedure Destroy (Self : not null access Widget_Record);
+
+private
+
+   type Sample_Data is array (Sample_Size range <>) of Sample_Block;
+   type Sample_Data_Ptr is access all Sample_Data;
+
+   type Widget_Record is new Parent_Record
+   with record
+      Track : Sample_Id;
+
+      Draw   : Gtk.Event_Box.Gtk_Event_Box;
+      Gain   : Gtk.Scale.Gtk_Scale;
+
+      Before : Sample_Data_Ptr := null;
+      After  : Sample_Data_Ptr := null;
+   end record;
+
+end GUI.Sample_Edit_Dialog;

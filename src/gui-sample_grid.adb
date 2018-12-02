@@ -98,6 +98,7 @@ package body GUI.Sample_Grid is
       pragma Unreferenced (W);
    begin
       Ada.Text_IO.Put_Line ("Edit sample" & Id'Img);
+      GUI.Sample_Actions.Edit (Id);
    end Edit_Sample_Callback;
 
    --------------------------
