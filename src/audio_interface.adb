@@ -20,56 +20,45 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Audio_Interface; use Audio_Interface;
+with Interfaces.C; use Interfaces.C;
+with Interfaces;   use Interfaces;
+with System;
 
-package Sample_Manager is
+package body Audio_Interface is
 
-   type Sample_Id is range 0 .. 99;
+   function Alsa_Init return Interfaces.C.int;
+   pragma Import (C, Alsa_Init, "alsa_init");
 
-   subtype Sample_Name_Size is Integer range 0 .. 15;
-   subtype Sample_Name is String (1 .. Sample_Name_Size'Last);
+   function Alsa_Close return Interfaces.C.int;
+   pragma Import (C, Alsa_Close, "alsa_close");
+   pragma Unreferenced (Alsa_Close);
 
-   subtype Sample_Block_Size is Natural range 1 .. 512;
-   subtype Sample_Block is Mono_Buffer (Sample_Block_Size);
-   type Sample_Block_Id is range 1 .. 8_192;
-   type Sample_Size is range 0 .. Sample_Block_Id'Last;
+   function Alsa_Send (Buff   : System.Address;
+                       Frames : Interfaces.C.unsigned)
+                       return Interfaces.C.int;
+   pragma Import (C, Alsa_Send, "alsa_send");
 
-   function Name (Id : Sample_Id) return Sample_Name;
+   ----------------
+   -- Initialize --
+   ----------------
 
-   procedure Set_Name (Id   : Sample_Id;
-                       Name : Sample_Name);
+   procedure Initialize is
+   begin
+      if Alsa_Init /= 0 then
+         raise Program_Error with "Alsa init error";
+      end if;
 
-   function Size (Id : Sample_Id) return Sample_Size;
+   end Initialize;
 
-   function Read_Block (Id    : Sample_Id;
-                        Block : Sample_Block_Id;
-                        Data  : out Sample_Block)
-                        return Boolean;
-   --  Return False if the block doesn't exist
+   ----------
+   -- Send --
+   ----------
 
-   function Empty (Id : Sample_Id) return Boolean;
+   procedure Send (Buffer : Stereo_Buffer) is
+   begin
+      if Alsa_Send (Buffer'Address, Buffer'Length) /= 0 then
+         raise Program_Error with "Alsa send error";
+      end if;
+   end Send;
 
-   function Available return Sample_Size;
-
-   procedure Erase (Id : Sample_Id)
-     with Post => Empty (Id)
-                    and then
-                  Available = Available'Old - Size (Id)'Old;
-
-   -- Recording --
-
-   procedure Start_Recording (Id : Sample_Id)
-     with Pre => not Recording and then Empty (Id) and then Available > 0;
-
-   procedure End_Recording
-     with Pre  => Recording,
-          Post => not Recording;
-
-   function Recording return Boolean;
-   --  Red Means Recording...
-
-   procedure Push (Data : Sample_Block)
-     with Pre  => Recording,
-          Post => Available = Available'Old - 1;
-
-end Sample_Manager;
+end Audio_Interface;

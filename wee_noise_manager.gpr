@@ -2,6 +2,7 @@ with "gtkada";
 
 project Wee_Noise_Manager is
 
+   for Languages use ("Ada", "C");
    for Source_Dirs use ("src");
    for Object_Dir use "obj";
    for Exec_Dir use ".";
@@ -23,8 +24,14 @@ project Wee_Noise_Manager is
 
    package Compiler is
       for Default_Switches ("ada") use ("-gnat12", "-gnatwa", "-gnatwe",
-                                        "-gnatyg", "-gnaty-d") & Build_Switches;
+                                        "-gnatyg", "-gnaty-d", "-fPIC") & Build_Switches;
+
+      for Default_Switches ("c") use ("-fPIC") & Build_Switches;
    end Compiler;
+
+   package Linker is
+      for Default_Switches ("ada") use ("-lasound");
+   end Linker;
 
    package Builder is
       for Executable ("main.adb") use "wee-noise-manager";

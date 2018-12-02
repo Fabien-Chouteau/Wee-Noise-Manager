@@ -20,56 +20,25 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Audio_Interface; use Audio_Interface;
+with Interfaces;
 
-package Sample_Manager is
+package Audio_Interface is
 
-   type Sample_Id is range 0 .. 99;
+   type Mono_Frame is new Interfaces.Integer_16
+     with Size => 16, Object_Size => 16;
 
-   subtype Sample_Name_Size is Integer range 0 .. 15;
-   subtype Sample_Name is String (1 .. Sample_Name_Size'Last);
+   type Stereo_Frame is record
+      L, R : Mono_Frame;
+   end record
+     with Size => 32, Object_Size => 32;
 
-   subtype Sample_Block_Size is Natural range 1 .. 512;
-   subtype Sample_Block is Mono_Buffer (Sample_Block_Size);
-   type Sample_Block_Id is range 1 .. 8_192;
-   type Sample_Size is range 0 .. Sample_Block_Id'Last;
+   type Mono_Buffer is array (Natural range <>) of Mono_Frame
+     with Pack;
+   type Stereo_Buffer is array (Natural range <>) of Stereo_Frame
+     with Pack;
 
-   function Name (Id : Sample_Id) return Sample_Name;
+   procedure Initialize;
 
-   procedure Set_Name (Id   : Sample_Id;
-                       Name : Sample_Name);
+   procedure Send (Buffer : Stereo_Buffer);
 
-   function Size (Id : Sample_Id) return Sample_Size;
-
-   function Read_Block (Id    : Sample_Id;
-                        Block : Sample_Block_Id;
-                        Data  : out Sample_Block)
-                        return Boolean;
-   --  Return False if the block doesn't exist
-
-   function Empty (Id : Sample_Id) return Boolean;
-
-   function Available return Sample_Size;
-
-   procedure Erase (Id : Sample_Id)
-     with Post => Empty (Id)
-                    and then
-                  Available = Available'Old - Size (Id)'Old;
-
-   -- Recording --
-
-   procedure Start_Recording (Id : Sample_Id)
-     with Pre => not Recording and then Empty (Id) and then Available > 0;
-
-   procedure End_Recording
-     with Pre  => Recording,
-          Post => not Recording;
-
-   function Recording return Boolean;
-   --  Red Means Recording...
-
-   procedure Push (Data : Sample_Block)
-     with Pre  => Recording,
-          Post => Available = Available'Old - 1;
-
-end Sample_Manager;
+end Audio_Interface;

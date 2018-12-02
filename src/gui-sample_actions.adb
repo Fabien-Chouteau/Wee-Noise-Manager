@@ -20,12 +20,14 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with Gtk.Widget;
 with Gtk.Dialog;              use Gtk.Dialog;
 with Gtk.Message_Dialog;      use Gtk.Message_Dialog;
 with Gtk.File_Chooser;        use Gtk.File_Chooser;
 with Gtk.File_Chooser_Dialog; use Gtk.File_Chooser_Dialog;
 
 with Sample_Manager;          use Sample_Manager;
+with Audio_Interface;         use Audio_Interface;
 
 with Ada.Text_IO;             use Ada.Text_IO;
 with Ada.Streams.Stream_IO;   use Ada.Streams.Stream_IO;
@@ -64,10 +66,8 @@ package body GUI.Sample_Actions is
    -- Load_Sample --
    -----------------
 
-   procedure Load_Sample (Id     : Sample_Manager.Sample_Id;
-                          Widget : Gtk.Widget.Gtk_Widget)
+   procedure Load_Sample (Id : Sample_Manager.Sample_Id)
    is
-      pragma Unreferenced (Widget);
 
       Diag : Gtk_File_Chooser_Dialog;
 
@@ -124,4 +124,29 @@ package body GUI.Sample_Actions is
       Diag.Destroy;
    end Load_Sample;
 
+   ------------------
+   -- Play_Preview --
+   ------------------
+
+   procedure Play_Preview (Id : Sample_Id) is
+      Block    : Sample_Block;
+      BlocK_Id : Sample_Block_Id := Sample_Block_Id'First;
+      Stereo   : Stereo_Buffer (Block'Range);
+   begin
+      Ada.Text_IO.Put_Line ("Sample preview:" & Id'Img);
+      while Sample_Manager.Read_Block (Id, BlocK_Id, Block) loop
+
+         for Index in Block'Range loop
+            Stereo (Index) := (Block (Index), Block (Index));
+         end loop;
+
+         Audio_Interface.Send (Stereo);
+         BlocK_Id := BlocK_Id + 1;
+      end loop;
+
+      Stereo := (others => (0, 0));
+      Audio_Interface.Send (Stereo);
+
+      Ada.Text_IO.Put_Line ("End sample preview");
+   end Play_Preview;
 end GUI.Sample_Actions;

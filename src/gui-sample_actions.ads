@@ -20,13 +20,12 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Gtk.Widget;
-
 with Sample_Manager;
 
 package GUI.Sample_Actions is
 
-   procedure Load_Sample (Id     : Sample_Manager.Sample_Id;
-                          Widget : Gtk.Widget.Gtk_Widget);
+   procedure Load_Sample (Id : Sample_Manager.Sample_Id);
+
+   procedure Play_Preview (Id : Sample_Manager.Sample_Id);
 
 end GUI.Sample_Actions;

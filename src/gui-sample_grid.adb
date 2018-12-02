@@ -108,16 +108,9 @@ package body GUI.Sample_Grid is
                                    Id : Sample_Id)
    is
       pragma Unreferenced (W);
-      Block : Sample_Manager.Sample_Block;
-      Block_Id : Sample_Manager.Sample_Block_Id :=
-        Sample_Manager.Sample_Block_Id'First;
    begin
       Ada.Text_IO.Put_Line ("Play sample" & Id'Img);
-
-      while Sample_Manager.Read_Block (Id, Block_Id, Block) loop
-         Ada.Text_IO.Put_Line ("Sample Block");
-         Block_Id := Block_Id + 1;
-      end loop;
+      Sample_Actions.Play_Preview (Id);
    end Play_Sample_Callback;
 
    --------------------------
@@ -127,8 +120,9 @@ package body GUI.Sample_Grid is
    procedure Load_Sample_Callback (W  : access Gtk_Button_Record'Class;
                                    Id : Sample_Id)
    is
+      pragma Unreferenced (W);
    begin
-      GUI.Sample_Actions.Load_Sample (Id, Gtk.Widget.Gtk_Widget (W));
+      GUI.Sample_Actions.Load_Sample (Id);
    end Load_Sample_Callback;
 
    --------------------

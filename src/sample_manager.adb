@@ -27,11 +27,11 @@ package body Sample_Manager is
 
    type Sample_Data is record
       Name : Sample_Name := (others => ASCII.NUL);
-      Size : Sample_Size := 42;
+      Size : Sample_Size := 0;
       First_Block : Sample_Size := 0;
    end record;
 
-   Sample_Memory : array (Sample_Memory_Size) of Unsigned_8;
+   Sample_Memory : array (Sample_Memory_Size) of Mono_Frame;
    Samples : array (Sample_Id) of Sample_Data;
 
    Last_Used : Sample_Size := 0;
