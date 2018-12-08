@@ -24,6 +24,7 @@ with Gtk.Box;            use Gtk.Box;
 with Glib;               use Glib;
 with Gtk.Enums;
 with GUI.Vertical_Gauge;
+with GUI.Pitch_Select;
 with GUI.Empty_Param;
 
 with Engine_Manager;     use Engine_Manager;
@@ -110,6 +111,14 @@ package body GUI.Params_Page is
             begin
                GUI.Vertical_Gauge.Gtk_New (P, Track, Step, Param,
                                            Fill => Kind in Volume);
+               return Gtk.Widget.Gtk_Widget (P);
+            end;
+
+         when Pitch =>
+            declare
+               P : GUI.Pitch_Select.Widget;
+            begin
+               GUI.Pitch_Select.Gtk_New (P, Track, Step, Param);
                return Gtk.Widget.Gtk_Widget (P);
             end;
 
