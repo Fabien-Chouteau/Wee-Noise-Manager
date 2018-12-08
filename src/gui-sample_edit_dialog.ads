@@ -21,11 +21,14 @@
 -------------------------------------------------------------------------------
 
 with Gtk.Dialog;
+with Gtk.Window;
 
 with Sample_Manager; use Sample_Manager;
 
 private with Gtk.Event_Box;
 private with Gtk.Scale;
+private with Gtk.Button;
+private with Glib;
 
 package GUI.Sample_Edit_Dialog is
 
@@ -38,19 +41,25 @@ package GUI.Sample_Edit_Dialog is
 
    type Widget is access all Widget_Record'Class;
 
-   procedure Gtk_New (Self  : out Widget;
-                      Id    : Sample_Id);
+   procedure Gtk_New (Self          : out Widget;
+                      Parent_Window : Gtk.Window.Gtk_Window;
+                      Id            : Sample_Id);
 
-   procedure Initialize (Self : not null access Widget_Record'Class;
-                         Id   : Sample_Id);
+   procedure Initialize (Self          : not null access Widget_Record'Class;
+                         Parent_Window : Gtk.Window.Gtk_Window;
+                         Id            : Sample_Id);
 
    overriding
    procedure Destroy (Self : not null access Widget_Record);
 
-private
-
    type Sample_Data is array (Sample_Size range <>) of Sample_Block;
    type Sample_Data_Ptr is access all Sample_Data;
+
+   function Modified_Sample (Self : Widget_Record)
+                             return not null Sample_Data_Ptr;
+private
+
+   type Drag_Kind is (None, First, Last);
 
    type Widget_Record is new Parent_Record
    with record
@@ -58,9 +67,23 @@ private
 
       Draw   : Gtk.Event_Box.Gtk_Event_Box;
       Gain   : Gtk.Scale.Gtk_Scale;
+      Play   : Gtk.Button.Gtk_Button;
 
       Before : Sample_Data_Ptr := null;
       After  : Sample_Data_Ptr := null;
+
+      --  Resize
+      First_Block : Sample_Block_Id;
+      Last_Block : Sample_Block_Id;
+
+      Dragging : Drag_Kind := None;
    end record;
+
+   function Cursor_On_First_Block (Self : Widget_Record;
+                                   X    : Glib.Gdouble)
+                                   return Boolean;
+   function Cursor_On_Last_Block (Self : Widget_Record;
+                                  X    : Glib.Gdouble)
+                                  return Boolean;
 
 end GUI.Sample_Edit_Dialog;

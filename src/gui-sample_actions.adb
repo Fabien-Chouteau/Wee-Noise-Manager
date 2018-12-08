@@ -146,13 +146,25 @@ package body GUI.Sample_Actions is
    -- Edit --
    ----------
 
-   procedure Edit (Id : Sample_Manager.Sample_Id) is
+   procedure Edit (Id            : Sample_Manager.Sample_Id;
+                   Parent_Window : Gtk.Window.Gtk_Window)
+   is
       Diag : GUI.Sample_Edit_Dialog.Widget;
    begin
-      GUI.Sample_Edit_Dialog.Gtk_New (Diag, Id);
+      GUI.Sample_Edit_Dialog.Gtk_New (Diag, Parent_Window, Id);
 
       if Diag.Run = Gtk.Dialog.Gtk_Response_Apply then
-         raise Program_Error with "Not implemented";
+         Ada.Text_IO.Put_Line ("Edit: erase");
+         Sample_Manager.Erase (Id);
+
+         Ada.Text_IO.Put_Line ("Edit: start recording");
+         Sample_Manager.Start_Recording (Id);
+
+         for Block of Diag.Modified_Sample.all loop
+            Sample_Manager.Push (Block);
+         end loop;
+         Ada.Text_IO.Put_Line ("Edit: end recording");
+         Sample_Manager.End_Recording;
       end if;
 
       Diag.Destroy;

@@ -22,12 +22,15 @@
 
 with Sample_Manager;
 
+with Gtk.Window;
+
 package GUI.Sample_Actions is
 
    procedure Load_Sample (Id : Sample_Manager.Sample_Id);
 
    procedure Play_Preview (Id : Sample_Manager.Sample_Id);
 
-   procedure Edit (Id : Sample_Manager.Sample_Id);
+   procedure Edit (Id            : Sample_Manager.Sample_Id;
+                   Parent_Window : Gtk.Window.Gtk_Window);
 
 end GUI.Sample_Actions;
