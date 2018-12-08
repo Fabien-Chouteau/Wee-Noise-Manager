@@ -25,7 +25,7 @@ with Gtk.Scrolled_Window;
 with Sample_Manager;
 
 private with Gtk.Grid;
-private with Gtk.Flow_Box;
+private with GUI.Sample_Grid_Cell;
 
 package GUI.Sample_Grid is
 
@@ -41,24 +41,13 @@ package GUI.Sample_Grid is
 
    procedure Initialize (Self : not null access Widget_Record'Class);
 
-   type Selected_Callback is access procedure (Id       : Sample_Id;
-                                               Selected : Boolean);
-
-   procedure Set_Selected_Callback (Self     : in out Widget_Record;
-                                    Callback : Selected_Callback);
-
-   procedure Set_Selected (Self     : in out Widget_Record;
-                           Id       : Sample_Id;
-                           Selected : Boolean);
-
 private
 
-   type Grid_Array is array (Sample_Id) of Gtk.Grid.Gtk_Grid;
+   type Grid_Array is array (Sample_Id) of GUI.Sample_Grid_Cell.Widget;
 
    type Widget_Record is new Parent_Record with record
       Cells : Grid_Array := (others => null);
-      Cells_Container : Gtk.Flow_Box.Gtk_Flow_Box;
-      Callback : Selected_Callback := null;
+      Cells_Container : Gtk.Grid.Gtk_Grid;
    end record;
 
 end GUI.Sample_Grid;

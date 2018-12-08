@@ -20,56 +20,40 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Gtk.Scrolled_Window; use Gtk.Scrolled_Window;
-with Gtk.Grid;     use Gtk.Grid;
-
-with Glib; use Glib;
-with Gtk.Widget; use Gtk.Widget;
+with Gtk.Grid;
 
 with Sample_Manager; use Sample_Manager;
 
-package body GUI.Sample_Grid is
+private with Gtk.GEntry;
 
-   -------------
-   -- Gtk_New --
-   -------------
+package GUI.Sample_Grid_Cell is
 
-   procedure Gtk_New (Self : out Widget)
-   is
-   begin
-      Self := new Widget_Record;
-      Sample_Grid.Initialize (Self);
-   end Gtk_New;
+   package Parent_Package renames Gtk.Grid;
+   subtype Parent_Record is Parent_Package.Gtk_Grid_Record;
+   subtype Parent is Parent_Package.Gtk_Grid;
 
-   ----------------
-   -- Initialize --
-   ----------------
+   type Widget_Record is new Parent_Record
+     and Updatable_Record
+   with private;
+   type Widget is access all Widget_Record'Class;
 
-   procedure Initialize (Self : not null access Widget_Record'Class)
-   is
-   begin
-      Initialize (Parent (Self));
+   procedure Gtk_New (Self : out Widget;
+                      Id   : Sample_Id);
 
-      Self.Set_Name ("sample-manager");
-      Self.Set_Vexpand (True);
-      Self.Set_Hexpand (True);
+   procedure Initialize (Self : not null access Widget_Record'Class;
+                         Id   : Sample_Id);
 
-      Self.Cells_Container := Gtk_Grid_New;
-      Self.Cells_Container.Set_Column_Spacing (0);
-      Self.Cells_Container.Set_Row_Spacing (0);
-      Self.Cells_Container.Set_Column_Homogeneous (True);
-      Self.Cells_Container.Set_Row_Homogeneous (True);
+   overriding
+   procedure Update (Self : in out Widget_Record);
 
-      Self.Add (Self.Cells_Container);
+private
 
-      for Id in Sample_Id loop
-         GUI.Sample_Grid_Cell.Gtk_New (Self.Cells (Id), Id);
-         Self.Cells_Container.Attach (Self.Cells (Id),
-                                      Gint (Id) mod 10,
-                                      Gint (Id) / 10);
-      end loop;
+   type Widget_Record is new Parent_Record
+     and Updatable_Record
+   with record
+      Id : Sample_Id;
 
-      Self.Show_All;
-   end Initialize;
+      Name_Entry : Gtk.GEntry.Gtk_Entry;
+   end record;
 
-end GUI.Sample_Grid;
+end GUI.Sample_Grid_Cell;
