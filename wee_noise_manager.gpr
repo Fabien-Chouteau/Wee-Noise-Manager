@@ -1,4 +1,5 @@
 with "gtkada";
+with "ada-synth-lib/ada_synth_lib_soundio.gpr";
 
 project Wee_Noise_Manager is
 

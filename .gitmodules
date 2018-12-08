@@ -1,0 +1,6 @@
+[submodule "ada-soundio"]
+	path = ada-soundio
+	url = https://github.com/raph-amiard/ada-soundio.git
+[submodule "ada-synth-lib"]
+	path = ada-synth-lib
+	url = https://github.com/raph-amiard/ada-synth-lib

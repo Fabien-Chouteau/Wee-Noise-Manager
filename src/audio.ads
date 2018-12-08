@@ -20,16 +20,21 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Audio;
-with Sample_Manager;
+with Interfaces;
 
-package Audio_Interface is
+package Audio is
 
-   procedure Initialize;
+   type Mono_Frame is new Interfaces.Integer_16
+     with Size => 16, Object_Size => 16;
 
-   procedure Send (Buffer : Audio.Stereo_Buffer);
+   type Stereo_Frame is record
+      L, R : Mono_Frame;
+   end record
+     with Size => 32, Object_Size => 32;
 
-   procedure Push_Sample_Preview (Data : Sample_Manager.Sample_Block);
-   procedure Sample_Preview_Flush;
+   type Mono_Buffer is array (Natural range <>) of Mono_Frame
+     with Pack;
+   type Stereo_Buffer is array (Natural range <>) of Stereo_Frame
+     with Pack;
 
-end Audio_Interface;
+end Audio;

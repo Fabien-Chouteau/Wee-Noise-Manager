@@ -132,22 +132,13 @@ package body GUI.Sample_Actions is
    procedure Play_Preview (Id : Sample_Id) is
       Block    : Sample_Block;
       BlocK_Id : Sample_Block_Id := Sample_Block_Id'First;
-      Stereo   : Stereo_Buffer (Block'Range);
    begin
       Ada.Text_IO.Put_Line ("Sample preview:" & Id'Img);
+      Audio_Interface.Sample_Preview_Flush;
       while Sample_Manager.Read_Block (Id, BlocK_Id, Block) loop
-
-         for Index in Block'Range loop
-            Stereo (Index) := (Block (Index), Block (Index));
-         end loop;
-
-         Audio_Interface.Send (Stereo);
+         Audio_Interface.Push_Sample_Preview (Block);
          BlocK_Id := BlocK_Id + 1;
       end loop;
-
-      Stereo := (others => (0, 0));
-      Audio_Interface.Send (Stereo);
-
       Ada.Text_IO.Put_Line ("End sample preview");
    end Play_Preview;
 

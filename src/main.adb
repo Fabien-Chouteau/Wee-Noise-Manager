@@ -33,16 +33,12 @@ with Gdk.Screen;
 
 with GUI.Root_Widget;
 
-with Audio_Interface;
-
 procedure Main is
    Window   : Gtk_Window;
    Root     : GUI.Root_Widget.Widget;
    Provider : Gtk_Css_Provider;
    Error    : aliased GError;
 begin
-
-   Audio_Interface.Initialize;
 
    Gtk.Main.Init;
 
