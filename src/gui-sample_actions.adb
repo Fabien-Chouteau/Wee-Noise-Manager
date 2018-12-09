@@ -21,21 +21,26 @@
 -------------------------------------------------------------------------------
 
 with Gtk.Widget;
-with Gtk.Dialog;              use Gtk.Dialog;
-with Gtk.Message_Dialog;      use Gtk.Message_Dialog;
-with Gtk.File_Chooser;        use Gtk.File_Chooser;
-with Gtk.File_Chooser_Dialog; use Gtk.File_Chooser_Dialog;
+with Gtk.Dialog;                use Gtk.Dialog;
+with Gtk.Message_Dialog;        use Gtk.Message_Dialog;
+with Gtk.File_Chooser;          use Gtk.File_Chooser;
+with Gtk.File_Chooser_Dialog;   use Gtk.File_Chooser_Dialog;
 
 with GUI.Sample_Edit_Dialog;
-with Sample_Manager;          use Sample_Manager;
-with Audio_Interface;         use Audio_Interface;
+with Sample_Manager;            use Sample_Manager;
+with Audio_Interface;           use Audio_Interface;
 
-with Ada.Text_IO;             use Ada.Text_IO;
-with Ada.Streams.Stream_IO;   use Ada.Streams.Stream_IO;
+with GNAT.Directory_Operations;
+with Ada.Text_IO;               use Ada.Text_IO;
+with Ada.Streams.Stream_IO;     use Ada.Streams.Stream_IO;
+with Ada.Strings.Fixed;         use Ada.Strings.Fixed;
 
 package body GUI.Sample_Actions is
 
+   package GDO renames GNAT.Directory_Operations;
+
    function Erase_Or_Cancel (Id : Sample_Id) return Gtk_Response_Type;
+   function Create_Sample_Name (Filename : String) return Sample_Name;
 
    ---------------------
    -- Erase_Or_Cancel --
@@ -55,13 +60,24 @@ package body GUI.Sample_Actions is
       Confirm.Destroy;
 
       if Ret = Gtk_Response_OK then
-         --  Erase the sample
-         Ada.Text_IO.Put_Line ("Erase Sample " & Id'Img);
-         --  Erase (Id);
+         Sample_Manager.Erase (Id);
       end if;
 
       return Ret;
    end Erase_Or_Cancel;
+
+   ------------------------
+   -- Create_Sample_Name --
+   ------------------------
+
+   function Create_Sample_Name (Filename : String) return Sample_Name is
+      Ext       : constant String := GDO.File_Extension (Filename);
+      Base_Name : constant String := GDO.Base_Name (Filename, Ext);
+   begin
+      return Head (Base_Name,
+                   Natural (Sample_Manager.Sample_Name_Size'Last),
+                   ASCII.NUL);
+   end Create_Sample_Name;
 
    -----------------
    -- Load_Sample --
@@ -82,15 +98,12 @@ package body GUI.Sample_Actions is
          return;
       end if;
 
-      Ada.Text_IO.Put_Line ("Load sample" & Id'Img);
-
       Gtk_New (Diag, "Load sample", null, Action_Open);
 
       Unused := Diag.Add_Button ("Load", Gtk_Response_OK);
       Unused := Diag.Add_Button ("Cancel", Gtk_Response_Cancel);
 
       if Diag.Run = Gtk.Dialog.Gtk_Response_OK then
-         Ada.Text_IO.Put_Line ("File open -> " & Diag.Get_Filename);
          declare
             Filename : constant String := Diag.Get_Filename;
             Input    : Ada.Streams.Stream_IO.File_Type;
@@ -106,20 +119,21 @@ package body GUI.Sample_Actions is
                Sample_Manager.Push (Buffer);
             end loop;
 
-            Sample_Manager.End_Recording;
             Close (Input);
 
          exception
             when Ada.Streams.Stream_IO.End_Error =>
-               Sample_Manager.End_Recording;
                if Is_Open (Input) then
                   Close (Input);
                end if;
          end;
-         Ada.Text_IO.Put_Line ("Sample Size (" & Id'Img & ") = " &
-                                 Sample_Manager.Size (Id)'Img);
-      else
-         Ada.Text_IO.Put_Line ("File open -> Canceled");
+
+         if Sample_Manager.Recording then
+            Sample_Manager.End_Recording;
+
+            Sample_Manager.Set_Name
+              (Id, Create_Sample_Name (Diag.Get_Filename));
+         end if;
       end if;
 
       Diag.Destroy;
