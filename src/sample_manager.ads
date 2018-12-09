@@ -20,7 +20,7 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Audio_Interface; use Audio_Interface;
+with Audio;
 
 package Sample_Manager is
 
@@ -30,9 +30,9 @@ package Sample_Manager is
    subtype Sample_Name is String (1 .. Sample_Name_Size'Last);
 
    subtype Sample_Block_Size is Natural range 1 .. 512;
-   subtype Sample_Block is Mono_Buffer (Sample_Block_Size);
-   type Sample_Block_Id is range 1 .. 8_192;
-   type Sample_Size is range 0 .. Sample_Block_Id'Last;
+   subtype Sample_Block is Audio.Mono_Buffer (Sample_Block_Size);
+   type Sample_Size is range 0 .. 8_192;
+   subtype Sample_Block_Id is Sample_Size range 1 .. Sample_Size'Last;
 
    function Name (Id : Sample_Id) return Sample_Name;
 

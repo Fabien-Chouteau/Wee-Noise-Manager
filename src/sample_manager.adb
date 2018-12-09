@@ -20,10 +20,10 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-package body Sample_Manager is
+with Audio; use Audio;
+with Ada.Text_IO;
 
-   type Sample_Memory_Size is
-     range 1 .. Integer (Sample_Size'Last) * Integer (Sample_Block_Size'Last);
+package body Sample_Manager is
 
    type Sample_Data is record
       Name : Sample_Name := (others => ASCII.NUL);
@@ -31,7 +31,7 @@ package body Sample_Manager is
       First_Block : Sample_Size := 0;
    end record;
 
-   Sample_Memory : array (Sample_Memory_Size) of Mono_Frame;
+   Sample_Memory : array (Sample_Block_Id) of Sample_Block;
    Samples : array (Sample_Id) of Sample_Data;
 
    Last_Used : Sample_Size := 0;
@@ -74,18 +74,12 @@ package body Sample_Manager is
                         return Boolean
    is
       Sample : Sample_Data renames Samples (Id);
-      Index  : Sample_Memory_Size;
-      Offset : Integer;
+      Index  : Sample_Block_Id;
    begin
       if Sample.Size /= 0 and then Block <= Sample_Block_Id (Sample.Size) then
+         Index := Sample.First_Block + Block - 1;
 
-         Offset := (Integer (Block) - 1) * Integer (Sample_Block_Size'Last);
-         Index := Sample_Memory_Size (Integer (Sample.First_Block) + Offset);
-
-         for Elt of Data loop
-            Elt := Sample_Memory (Index);
-            Index := Index + 1;
-         end loop;
+         Data := Sample_Memory (Index);
 
          return True;
       else
@@ -112,8 +106,40 @@ package body Sample_Manager is
    -----------
 
    procedure Erase (Id : Sample_Id) is
+      To : Sample_Block_Id := Samples (Id).First_Block;
+      From : Sample_Block_Id := To + Samples (Id).Size;
+      Size : Sample_Size;
    begin
-      raise Program_Error;
+      Ada.Text_IO.Put_Line ("From" & From'Img);
+      Ada.Text_IO.Put_Line ("To" & To'Img);
+      Ada.Text_IO.Put_Line ("Last_Used" & Last_Used'Img);
+      --  Shift all the samples to the left
+      while (From - 1) /= Last_Used loop
+
+         Ada.Text_IO.Put_Line ("Erase loop");
+         Ada.Text_IO.Put_Line ("   From" & From'Img);
+         Ada.Text_IO.Put_Line ("   To" & To'Img);
+         Ada.Text_IO.Put_Line ("   Last_Used" & Last_Used'Img);
+
+         for Sample of Samples loop
+            if Sample.Size /= 0 and then Sample.First_Block = From then
+               Ada.Text_IO.Put_Line ("Moving sample '" & Sample.Name & "'");
+               Sample.First_Block := To;
+               Size := Sample.Size;
+               exit;
+            end if;
+         end loop;
+
+         for Count in 1 .. Size loop
+            Sample_Memory (To) := Sample_Memory (From);
+            To := To + 1;
+            From := From + 1;
+         end loop;
+      end loop;
+
+      Last_Used := To - 1;
+      Ada.Text_IO.Put_Line ("New Last_Used" & Last_Used'Img);
+      Samples (Id).Size := 0;
    end Erase;
 
    ---------------------
@@ -149,19 +175,10 @@ package body Sample_Manager is
    ----------
 
    procedure Push (Data : Sample_Block) is
-      Index  : Sample_Memory_Size;
-      Offset : Integer;
    begin
       Last_Used := Last_Used + 1;
 
-      --  Copy data at Last_Used
-      Offset := (Integer (Last_Used) - 1) * Integer (Sample_Block_Size'Last);
-      Index := Sample_Memory_Size (1 + Offset);
-
-      for Elt of Data loop
-         Sample_Memory (Index) := Elt;
-         Index := Index + 1;
-      end loop;
+      Sample_Memory (Last_Used) := Data;
 
       Samples (Recording_In).Size := Samples (Recording_In).Size + 1;
    end Push;
